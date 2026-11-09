@@ -1,108 +1,68 @@
-(() => {
-  'use strict';
-
-  const $ = (id) => document.getElementById(id);
-  const canvas = $('world-map');
-  const ctx = canvas.getContext('2d');
-  const mapFrame = $('map-frame');
-  const STORE_KEY = 'worldcraft-save-v1';
-  const seasons = ['SPRING', 'SUMMER', 'AUTUMN', 'WINTER'];
-  const units = [
-    { id: 'infantry', name: 'Infantry brigade', icon: '♟', cost: 0.8, power: 2, description: 'Versatile ground presence', qty: 1000 },
-    { id: 'armor', name: 'Armored group', icon: '▰', cost: 2.4, power: 7, description: 'Heavy ground formation', qty: 120 },
-    { id: 'air', name: 'Air wing', icon: '✈', cost: 3.2, power: 8, description: 'Rapid-response air support', qty: 24 },
-    { id: 'artillery', name: 'Artillery group', icon: '◉', cost: 1.6, power: 5, description: 'Long-range support unit', qty: 36 }
-  ];
-  const fallbackUSA = {
-    type: 'Feature', properties: { name: 'United States', iso: 'US', pop: 331002651, gdp: 20936600, lon: -98.58, lat: 39.83, continent: 'North America' },
-    geometry: { type: 'Polygon', coordinates: [[[-124.7,48.4],[-122.8,48.2],[-123.1,46.2],[-124.2,42.0],[-122.9,41.0],[-123.0,39.0],[-121.5,37.5],[-119.5,36.0],[-117.1,33.0],[-114.7,32.7],[-111.0,31.3],[-108.2,31.3],[-106.5,31.8],[-104.5,29.6],[-102.8,29.0],[-101.4,29.8],[-100.0,29.3],[-97.1,25.9],[-96.0,28.0],[-93.8,29.8],[-90.0,29.2],[-88.0,30.3],[-85.0,30.2],[-82.0,IY],[-81.0,25.2],[-80.0,28.5],[-80.5,30.7],[-81.0,32.3],[-79.0,34.8],[-77.0,35.5],[-75.5,38.0],[-74.0,40.0],[-72.0,41.5],[-69.9,43.0],[-70.7,45.0],[-73.3,45.0],[-75.0,44.8],[-77.0,43.6],[-79.8,43.0],[-82.7,41.7],[-84.8,41.7],[-86.8,42.0],[-88.0,46.0],[-90.5,46.7],[-92.0,46.7],[-94.8,49.0],[-97.2,49.0],[-101.4,49.0],[-104.0,49.0],[-107.0,49.0],[-110.0,49.0],[-114.0,49.0],[-117.0,49.0],[-120.0,49.0],[-122.8,49.0],[-124.7,48.4]]] }
-  };
-  let features = [];
-  let countries = [];
-  let pathEntries = [];
-  let hovered = null;
-  let selected = null;
-  let player = null;
-  let state = null;
-  let scale = 1;
-  let offset = { x: 0, y: 0 };
-  let drag = null;
-  let feedIndex = 0;
-  let saveTimer;
-  const flagEmoji = (iso) => {
-    if (!iso || iso.length !== 2) return iso === 'CN-TW' ? '🇹🇼' : '🏳️';
-    return [...iso.toUpperCase()].map(c => String.fromCodePoint(c.charCodeAt(0) + 127397)).join('');
-  };
-  const number = (n) => new Intl.NumberFormat('en-US').format(Math.round(n));
-  const money = (n) => '$' + (n >= 1000 ? (n / 1000).toFixed(1) + 'T' : n.toFixed(1) + 'B');
-  const short = (n) => n >= 1e9 ? (n / 1e9).toFixed(1) + 'B' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : number(n);
-  const cleanName = (name) => ({ 'United Republic of Tanzania': 'Tanzania', 'Democratic Republic of the Congo': 'DR Congo', 'Republic of the Congo': 'Congo', 'Czechia': 'Czechia' }[name] || name);
-  function blankState() {
-    return { playerIso: 'US', treasury: 200, turn: 1, units: {}, relations: {}, readiness: {}, claims: {}, feed: ['Your government has received an opening treasury of $200 billion.'], selectedIso: 'CA' };
+  function setSelected(country) {
+    if (!country) return;
+    selected = country; state.selectedIso = country.iso;
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.tab === 'country'));
+    document.querySelectorAll('.tab-content').forEach(panel => panel.classList.toggle('active', panel.id === 'tab-country'));
+    render(); persist();
   }
-  function loadState() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(STORE_KEY));
-      if (saved && saved.playerIso && Number.isFinite(saved.treasury)) return { ...blankState(), ...saved };
-    } catch (e) { console.warn('Could not load save:', e); }
-    return blankState();
+  function mapPoint(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left) * canvas.width / rect.width;
+    const y = (event.clientY - rect.top) * canvas.height / rect.height;
+    return { x, y, worldX: (x - canvas.width / 2 - offset.x) / scale + canvas.width / 2, worldY: (y - canvas.height / 2 - offset.y) / scale + canvas.height / 2 };
   }
-  function persist() {
-    clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { console.warn('Save unavailable:', e); }
-    }, 80);
+  function countryAt(x, y) {
+    for (let i = countries.length - 1; i >= 0; i--) if (countries[i].path && ctx.isPointInPath(countries[i].path, x, y, 'evenodd')) return countries[i];
+    return null;
   }
-  function coordsOf(feature) {
-    const g = feature.geometry;
-    if (!g) return [];
-    return g.type === 'Polygon' ? [g.coordinates] : g.type === 'MultiPolygon' ? g.coordinates : [];
+  function showTooltip(country, event) {
+    const tip = $('map-tooltip');
+    if (!country) { tip.classList.remove('visible'); return; }
+    tip.innerHTML = `<b>${flagEmoji(country.iso)} ${escapeHtml(country.name)}</b><span>${escapeHtml(country.continent)} · Power ${country.power}/100</span>`;
+    const rect = mapFrame.getBoundingClientRect();
+    tip.style.left = `${Math.max(8, Math.min(rect.width - 190, event.clientX - rect.left + 13))}px`;
+    tip.style.top = `${Math.max(8, Math.min(rect.height - 60, event.clientY - rect.top + 13))}px`;
+    tip.classList.add('visible');
   }
-  function estimateArea(feature) {
-    const known = { US: 9834000, CA: 9985000, CN: 9597000, IN: 3287000, RU: 17098200, BR: 8516000, AU: 7692000 };
-    if (known[feature.properties.iso]) return known[feature.properties.iso];
-    let area = 0;
-    const R = 6371;
-    for (const polygon of coordsOf(feature)) for (let r = 0; r < polygon.length; r++) {
-      const ring = polygon[r]; let sum = 0;
-      for (let i = 0; i < ring.length; i++) {
-        const a = ring[i], b = ring[(i + 1) % ring.length];
-        sum += (b[0] - a[0]) * Math.PI / 180 * (2 + Math.sin(a[1] * Math.PI / 180) + Math.sin(b[1] * Math.PI / 180));
-      }
-      const ringArea = Math.abs(sum * R * R / 2);
-      area += r === 0 ? ringArea : -ringArea;
+  function zoomBy(factor) {
+    scale = Math.max(1, Math.min(5, scale * factor));
+    if (scale === 1) offset = { x: 0, y: 0 };
+    drawMap();
+  }
+  function focusCountry(country) {
+    if (!country) return;
+    scale = Math.max(scale, 2.2);
+    const w = canvas.width, h = canvas.height;
+    const px = (+country.feature.properties.lon + 180) / 360 * w;
+    const py = (85 - (+country.feature.properties.lat || 0)) / 170 * h;
+    offset = { x: -scale * (px - w / 2), y: -scale * (py - h / 2) };
+    drawMap();
+  }
+  function openCountryChooser() {
+    let dialog = $('nation-dialog');
+    if (!dialog) {
+      dialog = document.createElement('dialog'); dialog.id = 'nation-dialog';
+      dialog.innerHTML = '<button class="dialog-close" type="button" aria-label="Close">×</button><div class="eyebrow">CHOOSE YOUR NATION</div><h2>Where will you lead?</h2><p>Your new government starts with $200 billion.</p><label class="field-label" for="nation-search">FIND A COUNTRY</label><input id="nation-search" type="search" placeholder="Search countries…" autocomplete="off"><div class="nation-options" id="nation-options"></div>';
+      document.body.appendChild(dialog);
+      dialog.querySelector('.dialog-close').addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
     }
-    return Math.max(100, Math.round(area));
-  }
-  function prepareCountries(geo) {
-    features = geo.features || [];
-    if (!features.some(f => f.properties.iso === 'US')) features.push(fallbackUSA);
-    const gdpMax = Math.max(...features.map(f => +f.properties.gdp || 0));
-    const popMax = Math.max(...features.map(f => +f.properties.pop || 0));
-    countries = features.map(f => {
-      const p = f.properties;
-      const gdp = Math.max(1, +p.gdp || 1), pop = Math.max(1, +p.pop || 1);
-      const power = Math.round((0.62 * Math.sqrt(gdp / gdpMax) + 0.38 * Math.sqrt(pop / popMax)) * 100);
-      return { feature: f, iso: p.iso || p.name.slice(0, 2).toUpperCase(), name: cleanName(p.name), continent: p.continent || 'World', pop, gdp, power, area: estimateArea(f) };
-    }).sort((a, b) => a.name.localeCompare(b.name));
-    const rank = [...countries].sort((a, b) => b.power - a.power);
-    countries.forEach(c => c.rank = rank.indexOf(c) + 1);
-    $('country-count').textContent = countries.length;
-    player = countries.find(c => c.iso === state.playerIso) || countries.find(c => c.iso === 'US') || countries[0];
-    if (!countries.some(c => c.iso === state.playerIso)) state.playerIso = player.iso;
-    selected = countries.find(c => c.iso === state.selectedIso) || countries.find(c => c.iso !== player.iso) || player;
-  }
-  function pathFor(feature) {
-    const path = new Path2D();
-    const project = (point) => {
-      const [lon, lat] = point;
-      return [(lon + 180) / 360 * canvas.width, (85 - lat) / 170 * canvas.height];
+    const options = $('nation-options');
+    const populate = (query = '') => {
+      const q = query.trim().toLowerCase(); options.innerHTML = '';
+      countries.filter(c => c.name.toLowerCase().includes(q) || c.iso.toLowerCase().includes(q)).slice(0, 100).forEach(country => {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'nation-option';
+        button.innerHTML = `<span>${flagEmoji(country.iso)}</span><strong>${escapeHtml(country.name)}</strong><small>POWER ${country.power}</small>`;
+        button.addEventListener('click', () => {
+          if (!window.confirm(`Start a new game as ${country.name}? Your current save will be replaced.`)) return;
+          state = blankState(); state.playerIso = country.iso;
+          player = country; selected = countries.find(c => c.iso !== player.iso) || player; state.selectedIso = selected.iso;
+          scale = 1; offset = { x: 0, y: 0 }; dialog.close(); render(); persist(); showToast(`Commanding ${country.name}.`);
+        });
+        options.appendChild(button);
+      });
     };
-    for (const polygon of coordsOf(feature)) for (const ring of polygon) {
-      if (!ring.length) continue;
-      const first = project(ring[0]); path.moveTo(first[0], first[1]);
-      for (let i = 1; i < ring.length; i++) { const p = project(ring[i]); path.lineTo(p[0], p[1]); }
-      path.closePath();
-    }
-    return path;
+    populate(); $('nation-search').value = '';
+    $('nation-search').oninput = event => populate(event.target.value);
+    dialog.showModal(); $('nation-search').focus();
   }
