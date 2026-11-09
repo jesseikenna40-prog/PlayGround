@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101813">
+  <title>WORLDCRAFT — Global strategy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Worldcraft home"><span class="brand-mark">W</span><span>WORLD<span class="brand-light">CRAFT</span></span><i>GLOBAL STRATEGY SIM</i></a>
+      <div class="turn-chip"><span class="pulse"></span><span id="season">SPRING · 2026</span><span class="chip-divider"></span><span>TURN <b id="turn-number">01</b></span></div>
+      <button class="icon-btn help-btn" id="help-btn" aria-label="How to play">?</button>
+    </header>
+    <section class="commandbar">
+      <div class="commander"><span class="flag-large" id="player-flag">🇺🇸</span><div><small>COMMANDING</small><strong id="player-name">United States</strong></div><button class="change-nation" id="choose-country">CHANGE</button></div>
+      <div class="command-stats">
+        <div class="stat"><span class="stat-icon money-icon">$</span><div><small>TREASURY</small><strong id="treasury">$200.0B</strong></div></div>
+        <div class="stat"><span class="stat-icon">♟</span><div><small>ARMED FORCES</small><strong id="army-total">0 units</strong></div></div>
+        <div class="stat"><span class="stat-icon">◎</span><div><small>GLOBAL INFLUENCE</small><strong id="influence">1,240</strong></div></div>
+      </div>
+      <button class="end-turn" id="end-turn"><span>ADVANCE TURN</span><b>→</b></button>
+    </section>
+    <section class="game-layout">
+      <div class="map-column">
+        <div class="map-toolbar">
+          <div class="map-title"><div class="eyebrow">LIVE THEATER</div><h1>World at a glance <span class="live-dot"></span></h1></div>
+          <div class="map-tools"><div class="legend"><span><i class="legend-player"></i>Your nation</span><span><i class="legend-war"></i>At war</span><span><i class="legend-ally"></i>Ally</span></div><button id="reset-map" class="tool-button" title="Reset map view">⌖ <span>RESET</span></button></div>
+        </div>
+        <div class="map-frame" id="map-frame">
+          <canvas id="world-map" aria-label="Interactive map of the world"></canvas>
+          <div class="map-loading" id="map-loading"><span class="loading-ring"></span>Preparing the atlas…</div>
+          <div class="map-coordinates"><span>● LIVE ATLAS</span><span>COUNTRIES <b id="country-count">—</b></span></div>
+          <div class="map-hint">SELECT A COUNTRY TO INSPECT</div>
+          <div class="map-zoom"><button id="zoom-in" aria-label="Zoom in">+</button><button id="zoom-out" aria-label="Zoom out">−</button></div>
+          <div class="map-tooltip" id="map-tooltip"></div>
+        </div>
+        <div class="map-footer"><span>WORLDCRAFT ATLAS <b>·</b> Natural Earth geographic data</span><span>AREA & GDP INDICATORS ARE APPROXIMATE <b>·</b> GAME SIMULATION</span></div>
+      </div>
+      <aside class="intel-panel">
+        <div class="panel-tabs"><button class="tab active" data-tab="country">COUNTRY INTEL</button><button class="tab" data-tab="forces">YOUR FORCES <span id="force-count">0</span></button></div>
+        <section class="tab-content active" id="tab-country">
+          <div class="nation-head"><span class="nation-flag" id="nation-flag">🇨🇦</span><div><div class="eyebrow" id="nation-region">NORTH AMERICA</div><h2 id="nation-name">Canada</h2></div><button class="bookmark" title="Focus on map">↗</button></div>
+          <div class="nation-tags" id="nation-tags"><span class="tag neutral">NEUTRAL</span></div>
+          <div class="power-card"><div class="power-label"><span>POWER INDEX</span><strong id="power-label">#08 <small>GLOBAL RANK</small></strong></div><div class="power-track"><i id="power-bar"></i></div><div class="power-foot"><span>RELATIVE CAPACITY</span><strong id="power-value">76 / 100</strong></div></div>
+          <div class="metrics-grid"><div class="metric"><small>LAND AREA</small><strong id="area-value">9.98M <em>km²</em></strong></div><div class="metric"><small>POPULATION</small><strong id="population-value">40.1M</strong></div><div class="metric"><small>GDP ESTIMATE</small><strong id="gdp-value">$2.1T</strong></div><div class="metric"><small>READINESS</small><strong id="readiness-value">100<span>%</span></strong></div></div>
+          <div class="section-rule"><span>DIPLOMACY</span><i></i></div>
+          <div class="diplomacy-actions"><button class="action-btn ally-btn" id="ally-btn"><span>✦</span> Propose alliance</button><button class="action-btn war-btn" id="war-btn"><span>⚑</span> Declare war</button><button class="action-btn demand-btn" id="demand-btn"><span>⇥</span> Demand land</button></div>
+          <div class="notice" id="diplomacy-notice">Select a country on the atlas to review its position and diplomacy options.</div>
+        </section>
+        <section class="tab-content" id="tab-forces">
+          <div class="forces-heading"><div class="eyebrow">FIELD COMMAND</div><h2>Build your force</h2><p>Recruit units from your treasury. Each costs billions (B).</p></div>
+          <div class="unit-list" id="unit-list"></div>
+          <div class="section-rule custom-rule"><span>DESIGN LAB</span><i></i></div>
+          <div class="design-box"><div class="design-top"><span class="design-icon">✳</span><div><strong>Custom vehicle</strong><small>Prototype your own fighting machine</small></div><span class="design-stamp">EXPERIMENTAL</span></div><label class="field-label" for="design-name">DESIGN NAME</label><input id="design-name" maxlength="24" value="Twin-bore sentinel" placeholder="Name your prototype"><div class="design-row"><label>BARRELS<input id="barrels" type="number" min="1" max="8" value="2"></label><label>ARMOR<input id="armor" type="range" min="1" max="10" value="5"><span id="armor-value">5 / 10</span></label></div><div class="design-cost"><span>EST. PROTOTYPE COST</span><strong id="prototype-cost">$1.8B</strong></div><button id="build-custom" class="build-custom">BUILD PROTOTYPE <span>→</span></button></div>
+          <div class="force-note">Units are game abstractions, not real-world deployment guidance.</div>
+        </section>
+        <div class="panel-bottom"><span class="save-indicator"><i></i> GAME AUTO-SAVED</span><button id="new-game" class="new-game">NEW GAME</button></div>
+      </aside>
+    </section>
+    <section class="bottom-strip"><div class="feed-title"><span class="feed-pip"></span> WORLD DISPATCHES</div><div class="feed-items" id="feed"><span class="dispatch"><b>01</b> Your government has received an opening treasury of <strong>$200 billion.</strong></span></div><button class="feed-next" id="feed-next">↗</button></section>
+  </main>
+  <div class="toast" id="toast" role="status"></div>
+  <dialog id="help-dialog"><button class="dialog-close" id="close-help">×</button><div class="eyebrow">FIELD GUIDE</div><h2>Shape the world, your way.</h2><p>Click any country on the atlas to inspect its real-world outline, approximate area, population and GDP. Start with <b>$200 billion</b> and build a force using the Your Forces tab.</p><div class="guide-grid"><div><b>01 · Diplomacy</b><span>Propose alliances, declare a game-simulated war, or make a land demand.</span></div><div><b>02 · Time matters</b><span>Advance turns to collect income and resolve conflicts. Long wars drain readiness and treasury.</span></div><div><b>03 · Design lab</b><span>Prototype a custom tank by choosing its name, barrel count and armor.</span></div><div><b>04 · Keep it playful</b><span>Real borders and country stats meet fictional, simplified strategy rules. No real-world forecasts.</span></div></div><p class="guide-source">Geographic shapes: Natural Earth 1:110m. Area, GDP and power are reference estimates; combat and outcomes are fictional.</p></dialog>
+  <script src="game.js"></script>
+</body>
+</html>
