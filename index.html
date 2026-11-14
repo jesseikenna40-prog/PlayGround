@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#101510">
+  <link rel="icon" href="data:,">
+  <title>REDLINE — Pixel Motorsport</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="wordmark" href="#" aria-label="Redline home"><span class="mark">R<span>↗</span></span><span class="brand-copy">REDLINE<small>PIXEL MOTORSPORT</small></span></a>
+      <div class="season-tag"><span class="live-dot"></span> SEASON 04 <span class="tag-divider">/</span> COASTLINE</div>
+      <div class="wallet"><span class="coin">¢</span><strong id="cash">12,450</strong><span class="wallet-label">CR</span></div>
+      <button class="sound-button" id="soundButton" aria-label="Toggle sound">♫ <span>SOUND ON</span></button>
+    </header>
+
+    <section class="game-layout">
+      <aside class="left-rail">
+        <div class="rail-heading">YOUR GARAGE <span id="carCount">01 / 08</span></div>
+        <div class="car-list" id="carList"></div>
+        <button id="collectionButton" class="collection-button"><span>＋</span> BROWSE COLLECTION <span class="button-arrow">↗</span></button>
+        <div class="rail-footer"><span class="mini-label">CURRENT RIDE</span><div class="current-car"><span id="railCarName">AE86 Trueno</span><span class="status-pill">READY</span></div><div class="mini-stat-row"><span>DRIVER LEVEL</span><b>06</b><div class="xp-track"><i></i></div></div></div>
+      </aside>
+
+      <section class="center-stage">
+        <div class="stage-topline"><div class="breadcrumb">HOME <span>›</span> <b id="breadcrumb">FREE DRIVE</b></div><div class="location"><span class="pin">⌖</span> SUNSET COAST <span class="location-time">18:42</span></div></div>
+        <div class="game-frame" id="gameFrame">
+          <canvas id="gameCanvas" width="480" height="270" aria-label="Pixel art racing game"></canvas>
+          <div class="canvas-vignette"></div>
+          <div class="race-hud" id="raceHud">
+            <div class="hud-left"><div class="mode-tag"><span class="mode-dot"></span><span id="modeLabel">FREE DRIVE</span></div><div class="lap-readout" id="raceProgress"><span>COASTLINE RUN</span><b>NO LIMITS</b></div></div>
+            <div class="speed-block"><div class="speed-value"><span id="speedValue">000</span><small>KM/H</small></div><div class="speed-bar"><i id="speedBar"></i></div><div class="gear-readout">GEAR <b id="gearValue">1</b><span> / 6</span></div></div>
+          </div>
+          <div class="race-countdown hidden" id="countdown"><span>3</span><small>GET READY</small></div>
+          <div class="race-finish hidden" id="finishOverlay"><span class="finish-kicker">COASTLINE SPRINT</span><strong id="finishTitle">FINISH!</strong><p id="finishText">Clean run. Nice driving.</p><button id="finishContinue">CONTINUE <span>→</span></button></div>
+          <div class="stage-notice" id="stageNotice"><span>✦</span> COLLECT CR TO BUILD YOUR DREAM CAR</div>
+          <div class="minimap"><canvas id="mapCanvas" width="76" height="52"></canvas><span class="map-label">COASTLINE</span></div>
+          <div class="race-controls-hint" id="keyboardHint"><span>W</span><span>A</span><span>S</span><span>D</span><small>DRIVE</small><span class="hint-space">SPACE</span><small>DRIFT</small></div>
+          <div class="touch-controls" id="touchControls"><button data-control="left">◀</button><button data-control="right">▶</button><div><button data-control="brake">BRAKE</button><button data-control="gas" class="gas-button">GO!</button></div></div>
+        </div>
+        <div class="stage-toolbar"><div class="view-tabs"><button class="view-tab active" id="driveTab"><span>◈</span> DRIVE</button><button class="view-tab" id="garageTab"><span>⚙</span> TUNE GARAGE</button></div><button class="race-button" id="raceButton"><span class="race-icon">▶</span><span>START A RACE</span><span class="race-reward">+ 1,200 CR</span><span class="race-arrow">↗</span></button></div>
+        <div class="stage-footnote"><span><i class="foot-dot"></i> PIXEL WORLD: COASTLINE</span><span>BUILD 0.4.2 <i>·</i> AUTOSAVE ON</span></div>
+      </section>
+
+      <aside class="right-panel" id="rightPanel">
+        <div class="car-profile"><div class="profile-heading"><span>VEHICLE PROFILE</span><button aria-label="More vehicle details">···</button></div><div class="profile-make" id="carMake">TOYOTA · 1985</div><h1 id="carTitle">AE86 <span>TRUENO</span></h1><p class="car-subtitle" id="carSubtitle">Lightweight legend. Rear-wheel drive.</p><div class="profile-car-art"><canvas id="carPreview" width="280" height="118"></canvas><div class="art-shadow"></div></div><div class="car-tags"><span id="driveTag">RWD</span><span id="bodyTag">COUPE</span><span id="engineTag">I4</span><span id="tierTag">CLASSIC</span></div></div>
+        <div class="performance"><div class="section-caption"><span>PERFORMANCE</span><small>LIVE SPEC</small></div><div class="power-stat"><div><span>POWER OUTPUT</span><small id="engineSpec">1.6L INLINE-4 · NA</small></div><strong id="hpValue">128 <small>HP</small></strong></div><div class="stat-track"><i id="hpBar"></i></div><div class="stats-grid"><div class="stat"><span>0–100 KM/H</span><b id="zeroStat">8.3 <small>SEC</small></b></div><div class="stat"><span>TOP SPEED</span><b id="topStat">196 <small>KM/H</small></b></div><div class="stat"><span>WEIGHT</span><b id="weightStat">940 <small>KG</small></b></div><div class="stat"><span>HANDLING</span><b id="handlingStat">★★★★<i>★</i></b></div></div></div>
+        <button class="upgrade-cta" id="upgradeCta"><span class="upgrade-icon">✳</span><span><b>BUILD YOUR RIDE</b><small>ENGINE, AERO & MORE</small></span><span class="cta-arrow">→</span></button>
+        <div class="daily-event"><div class="event-art"><span>⚑</span><small>EVENT 04</small></div><div><span class="event-label">TODAY'S EVENT</span><b>NEON COAST SPRINT</b><small>03:00 <span>·</span> STREET CLASS</small></div><button id="eventButton">GO <span>↗</span></button></div>
+      </aside>
+    </section>
+    <footer class="bottom-bar"><span>© REDLINE MOTORSPORT <i>·</i> DRIVE YOUR WAY</span><div><span class="control-tip"><b>WASD</b> DRIVE</span><span class="control-tip"><b>SPACE</b> DRIFT</span><span class="control-tip"><b>R</b> RESET</span></div><button id="helpButton">CONTROLS &nbsp; ?</button></footer>
+  </main>
+
+  <div class="modal-backdrop hidden" id="modalBackdrop"><section class="modal garage-modal" id="garageModal" aria-label="Tuning garage"><div class="modal-header"><div><div class="modal-eyebrow">YOUR BUILDS · <span id="garageCarName">AE86 TRUENO</span></div><h2>TUNE <span>GARAGE</span></h2></div><button class="close-modal" data-close>✕</button></div><div class="garage-tabs"><button class="garage-tab active" data-tab="engine">01 &nbsp; ENGINE</button><button class="garage-tab" data-tab="aero">02 &nbsp; BODY & AERO</button><button class="garage-tab" data-tab="interior">03 &nbsp; INTERIOR</button></div><div class="garage-body"><div class="upgrade-list" id="upgradeList"></div><aside class="build-summary"><div class="summary-label">CURRENT BUILD</div><canvas id="garageCarArt" width="220" height="94"></canvas><b id="summaryCarName">AE86 TRUENO</b><div class="summary-spec"><span>EST. POWER</span><b id="summaryHp">128 HP</b></div><div class="summary-spec"><span>0–100 KM/H</span><b id="summaryZero">8.3 SEC</b></div><div class="summary-spec total"><span>PARTS INSTALLED</span><b id="partCount">0</b></div><div class="build-tip"><span>✦</span> Tune parts boost your car's stats. Mix and match to find your setup.</div></aside></div><div class="modal-footer"><span class="credit-balance">YOUR CREDITS <b id="modalCash">12,450 CR</b></span><button class="done-button" data-close>DONE <span>↗</span></button></div></section>
+    <section class="modal collection-modal hidden" id="collectionModal" aria-label="Car collection"><div class="modal-header"><div><div class="modal-eyebrow">08 MACHINES · REAL & IMAGINED</div><h2>CAR <span>COLLECTION</span></h2></div><button class="close-modal" data-close>✕</button></div><div class="collection-grid" id="collectionGrid"></div><div class="modal-footer"><span>SELECT A CAR TO TAKE IT FOR A SPIN.</span><button class="done-button" data-close>DONE <span>↗</span></button></div></section>
+    <section class="modal help-modal hidden" id="helpModal" aria-label="Game controls"><div class="modal-header"><div><div class="modal-eyebrow">QUICK START</div><h2>TAKE THE <span>WHEEL</span></h2></div><button class="close-modal" data-close>✕</button></div><div class="help-content"><div class="help-card"><b>W <span>↑</span></b><small>ACCELERATE</small></div><div class="help-card"><b>S <span>↓</span></b><small>BRAKE / REVERSE</small></div><div class="help-card"><b>A <span>←</span> &nbsp; D <span>→</span></b><small>STEER</small></div><div class="help-card"><b>SPACE</b><small>HANDBRAKE & DRIFT</small></div><div class="help-card"><b>R</b><small>RESET YOUR CAR</small></div><p>Hit <b>START A RACE</b> to launch the Coastline Sprint. Pick up glowing credits on free drives, then use them in the Tune Garage to build real horsepower.</p></div><div class="modal-footer"><span>TOUCH CONTROLS AVAILABLE ON MOBILE</span><button class="done-button" data-close>LET'S DRIVE <span>↗</span></button></div></section>
+  </div>
+  <div class="toast" id="toast"><span>✦</span><b>+25 CR</b> credits collected</div>
+  <script src="game.js"></script>
+</body>
+</html>

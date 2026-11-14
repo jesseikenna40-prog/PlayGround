@@ -1,6 +1,0 @@
-{
-  "name": "omgithub-image-history",
-  "private": true,
-  "type": "module",
-  "exports": { ".": "./server.js", "./server": "./server.js" }
-}
